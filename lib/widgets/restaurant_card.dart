@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../constants/app_colors.dart';
 import '../models/restaurant.dart';
-import '../screens/restaurant_detail_screen.dart';
 
 class RestaurantCard extends StatelessWidget {
   final Restaurant restaurant;
@@ -26,18 +26,17 @@ class RestaurantCard extends StatelessWidget {
           ),
         ],
       ),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  RestaurantDetailScreen(restaurant: restaurant),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
+      child: Semantics(
+        label: '${restaurant.name} 가게 카드',
+        hint: '누르시면 가게 상세 화면으로 이동합니다.',
+        button: true,
+        child: InkWell(
+          onTap: () {
+            // 가게 상세 화면으로 이동 (구현 생략)
+            // context.push('/store/${restaurant.id}');
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
           padding: EdgeInsets.all(16),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,6 +240,7 @@ class RestaurantCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

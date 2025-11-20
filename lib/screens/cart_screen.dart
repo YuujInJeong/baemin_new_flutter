@@ -1,673 +1,476 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
-import '../models/restaurant.dart';
-import '../widgets/cart_item_card.dart';
-import '../data/restaurant_data.dart';
-import 'order_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import '../theme/app_theme.dart';
+import '../providers/cart_provider.dart';
+import '../providers/address_provider.dart';
 
-class CartScreen extends StatefulWidget {
-  final List<CartItem>? initialItems;
-  final Restaurant? restaurant;
-  const CartScreen({Key? key, this.initialItems, this.restaurant})
-      : super(key: key);
+class CartScreen extends ConsumerStatefulWidget {
+  const CartScreen({super.key});
 
   @override
-  State<CartScreen> createState() => _CartScreenState();
+  ConsumerState<CartScreen> createState() => _CartScreenState();
 }
 
-class _CartScreenState extends State<CartScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  late Restaurant _selectedRestaurant;
-  late List<CartItem> _cartItems;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _selectedRestaurant =
-        widget.restaurant ?? RestaurantData.getRestaurants().first;
-    _cartItems = (widget.initialItems != null &&
-            widget.initialItems!.isNotEmpty)
-        ? widget.initialItems!
-            .map((e) => CartItem(
-                menuItem: e.menuItem,
-                quantity: e.quantity,
-                selectedOptions: Map.of(e.selectedOptions)))
-            .toList()
-        : [
-            CartItem(
-              menuItem: MenuItem(
-                id: '4-5',
-                name: '[무조건]아메리카노',
-                description: '깊고 진한 에스프레소의 맛을 그대로 느낄 수 있는 클래식 아메리카노',
-                price: 3500,
-                reviewCount: 45,
-                imageUrl: 'assets/img/americano.jpg',
-                badges: ['베스트'],
-                options: [],
-              ),
-              quantity: 2,
-              selectedOptions: {
-                'ICE/HOT': 'ICE',
-                '뚜껑 선택': '기본 뚜껑 (기본)',
-              },
-            ),
-            CartItem(
-              menuItem: MenuItem(
-                id: '4-1',
-                name: '신선도100% 포케 샐러드',
-                description: '가장 기본적인 것이 가장 아름답다 고로, 이것은 읍천리만의 손색없는 시그니처 메뉴',
-                price: 9900,
-                reviewCount: 9,
-                imageUrl: 'assets/img/fresh_poke.jpg',
-                badges: ['사장님 추천'],
-                options: [],
-              ),
-              quantity: 1,
-              selectedOptions: {
-                '토핑 택1': '현미밥',
-                '소스 택1': '랜치 드레싱 (연어 / 오리훈제 조합)',
-              },
-            ),
-          ];
-  }
+class _CartScreenState extends ConsumerState<CartScreen> {
+  String _deliveryOption = 'wow'; // 'wow' or 'normal'
 
   @override
   Widget build(BuildContext context) {
+    final cartState = ref.watch(cartProvider);
+    final address = ref.watch(addressProvider);
+    final formatter = NumberFormat('#,###');
+
+    final deliveryFee = _deliveryOption == 'wow' ? 0 : 1000;
+    final discount = cartState.totalPrice > 0 ? 2000 : 0; // 더미 할인
+    final finalTotal = cartState.totalPrice + deliveryFee - discount;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: _buildAppBar(),
-      body: Column(
-        children: [
-          _buildTabBar(),
-          _buildStoreInfo(),
-          _buildDiscountBanner(),
-          Expanded(
-            child: _buildCartItems(),
-          ),
-          _buildRecommendations(),
-          _buildDeliveryOptions(),
-          _buildOrderSummary(),
-        ],
+      backgroundColor: AppTheme.bgGray,
+      appBar: AppBar(
+        title: const Text('장바구니'),
       ),
-      bottomNavigationBar: _buildBottomBar(),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
-        onPressed: () => Navigator.pop(context),
-      ),
-      title: Text(
-        '장바구니',
-        style: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.person_add, color: AppColors.textPrimary),
-          onPressed: () {},
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTabBar() {
-    return Container(
-      color: Colors.white,
-      child: TabBar(
-        controller: _tabController,
-        labelColor: AppColors.textPrimary,
-        unselectedLabelColor: AppColors.textSecondary,
-        indicatorColor: AppColors.textPrimary,
-        indicatorWeight: 2,
-        tabs: [
-          Tab(text: '배달·픽업 ${_cartItems.length}'),
-          Tab(text: '장보기·쇼핑'),
-          Tab(text: '전국특가'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStoreInfo() {
-    return Container(
-      padding: EdgeInsets.all(16),
-      color: Colors.white,
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceBackground,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Icon(
-              Icons.restaurant,
-              color: AppColors.textMuted,
-              size: 20,
-            ),
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              _selectedRestaurant.name,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ),
-          Icon(Icons.arrow_forward_ios, color: AppColors.textMuted, size: 16),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDiscountBanner() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.accentPurple.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.accentPurple.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.flash_on, color: AppColors.accentPurple, size: 20),
-          SizedBox(width: 8),
-          Text(
-            '1,000원 즉시할인 적용됨',
-            style: TextStyle(
-              color: AppColors.accentPurple,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          Spacer(),
-          Icon(Icons.arrow_forward_ios,
-              color: AppColors.accentPurple, size: 16),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCartItems() {
-    if (_cartItems.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.shopping_cart_outlined,
-              size: 80,
-              color: AppColors.textMuted,
-            ),
-            SizedBox(height: 16),
-            Text(
-              '장바구니가 비어있습니다',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              '맛있는 메뉴를 담아보세요!',
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.textMuted,
-              ),
-            ),
-            SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.baeminMint,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: Text('메뉴 보러가기'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: EdgeInsets.all(16),
-      itemCount: _cartItems.length,
-      itemBuilder: (context, index) {
-        return CartItemCard(
-          cartItem: _cartItems[index],
-          onQuantityChanged: (quantity) {
-            setState(() {
-              if (quantity <= 0) {
-                _cartItems.removeAt(index);
-              } else {
-                _cartItems[index].quantity = quantity;
-              }
-            });
-          },
-          onRemove: () {
-            setState(() {
-              _cartItems.removeAt(index);
-            });
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildRecommendations() {
-    return Container(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '함께 먹으면 좋아요',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          SizedBox(height: 12),
-          Row(
-            children: [
-              _buildRecommendationItem('[판매율 1위] 미숫가루', '4,700원~'),
-              SizedBox(width: 12),
-              _buildRecommendationItem('[로맨틱한] 바닐라빈라떼', '4,900원~'),
-              SizedBox(width: 12),
-              _buildRecommendationItem('[부드러운]카페라떼', '4,000원~'),
-            ],
-          ),
-          SizedBox(height: 12),
-          Center(
-            child: TextButton(
-              onPressed: () {},
+      body: cartState.items.isEmpty
+          ? const Center(
               child: Text(
-                '더보기',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
+                '장바구니가 비어있습니다',
+                style: TextStyle(color: AppTheme.textGray),
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecommendationItem(String name, String price) {
-    return Expanded(
-      child: Container(
-        padding: EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.borderLight),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              name,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(height: 4),
-            Text(
-              price,
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            SizedBox(height: 8),
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                '추가',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDeliveryOptions() {
-    return Container(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '수령 방법을 선택해주세요',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          SizedBox(height: 12),
-          _buildDeliveryOption('알뜰배달', '18~33분', '2,700원 무료', true),
-          _buildDeliveryOption('한집배달', '16~26분', '3,700원 무료', false, true),
-          _buildDeliveryOption('가게배달', '29~44분', '2,500원'),
-          _buildDeliveryOption('픽업', '7~17분 후 픽업', '무료'),
-          _buildDeliveryOption('매장', '7~17분 후 방문', '무료'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDeliveryOption(String name, String time, String fee,
-      [bool isCheapest = false, bool isSelected = false]) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 8),
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isSelected ? AppColors.primary : AppColors.borderLight,
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            )
+          : Column(
               children: [
-                Row(
-                  children: [
-                    Text(
-                      name,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    if (isCheapest) ...[
-                      SizedBox(width: 8),
-                      Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.accentGreen,
-                          borderRadius: BorderRadius.circular(4),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 주소
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          color: Colors.white,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Semantics(
+                                      label: '섹션 제목',
+                                      child: const Text(
+                                        '배송 주소',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: AppTheme.textGray,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Semantics(
+                                      label: '현재 배송 주소',
+                                      hint: address?.fullAddress ?? '주소를 선택하세요',
+                                      child: Text(
+                                        address?.fullAddress ?? '주소를 선택하세요',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppTheme.textBlack,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Semantics(
+                                label: '주소 수정 버튼',
+                                hint: '누르시면 주소 관리 화면으로 이동합니다.',
+                                button: true,
+                                child: TextButton(
+                                  onPressed: () => context.push('/address'),
+                                  child: const Text('수정'),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        child: Text(
-                          '가장 저렴',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
+                        const SizedBox(height: 8),
+                        // 배송 옵션
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          color: Colors.white,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Semantics(
+                                label: '섹션 제목',
+                                child: const Text(
+                                  '배송 옵션',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.textBlack,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Semantics(
+                                label: 'WOW 무료배달 옵션',
+                                hint: _deliveryOption == 'wow' ? '현재 선택된 배송 옵션입니다. 무료로 배달됩니다.' : '선택하면 무료로 배달됩니다.',
+                                child: RadioListTile<String>(
+                                  value: 'wow',
+                                  groupValue: _deliveryOption,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _deliveryOption = value!;
+                                    });
+                                  },
+                                  title: const Text('WOW 무료배달'),
+                                  subtitle: const Text('무료'),
+                                  activeColor: AppTheme.primaryBlue,
+                                ),
+                              ),
+                              Semantics(
+                                label: '한집 배달 옵션',
+                                hint: _deliveryOption == 'normal' ? '현재 선택된 배송 옵션입니다. 추가로 ${formatter.format(1000)}원이 부과됩니다.' : '선택하면 추가로 ${formatter.format(1000)}원이 부과됩니다.',
+                                child: RadioListTile<String>(
+                                  value: 'normal',
+                                  groupValue: _deliveryOption,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _deliveryOption = value!;
+                                    });
+                                  },
+                                  title: const Text('한집 배달'),
+                                  subtitle: Text('+${formatter.format(1000)}원'),
+                                  activeColor: AppTheme.primaryBlue,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        // 장바구니 리스트
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          color: Colors.white,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Semantics(
+                                label: '섹션 제목',
+                                child: const Text(
+                                  '주문 내역',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.textBlack,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              ...cartState.items.map((item) {
+                                return _buildCartItem(item, formatter);
+                              }),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 100), // 하단 버튼 공간
+                      ],
+                    ),
+                  ),
+                ),
+                // 하단 결제 바
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, -2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Semantics(
+                        label: '주문 금액 ${formatter.format(cartState.totalPrice)}원',
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              '주문 금액',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppTheme.textGray,
+                              ),
+                            ),
+                            Text(
+                              '${formatter.format(cartState.totalPrice)}원',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: AppTheme.textBlack,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Semantics(
+                        label: deliveryFee > 0 ? '배달비 ${formatter.format(deliveryFee)}원' : '배달비 무료',
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              '배달비',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppTheme.textGray,
+                              ),
+                            ),
+                            Text(
+                              deliveryFee > 0
+                                  ? '+${formatter.format(deliveryFee)}원'
+                                  : '무료',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: AppTheme.textBlack,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (discount > 0) ...[
+                        const SizedBox(height: 8),
+                        Semantics(
+                          label: '즉시할인 ${formatter.format(discount)}원',
+                          hint: '할인 혜택이 적용되었습니다.',
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                '즉시할인',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppTheme.primaryBlue,
+                                ),
+                              ),
+                              Text(
+                                '-${formatter.format(discount)}원',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: AppTheme.primaryBlue,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      const Divider(),
+                      Semantics(
+                        label: '최종 결제 금액 ${formatter.format(finalTotal)}원',
+                        hint: cartState.totalPrice != finalTotal 
+                            ? '원래 가격 ${formatter.format(cartState.totalPrice + deliveryFee)}원에서 할인이 적용되었습니다.'
+                            : '',
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            if (cartState.totalPrice != finalTotal)
+                              Semantics(
+                                label: '원래 가격',
+                                hint: '할인 전 가격입니다.',
+                                child: Text(
+                                  '${formatter.format(cartState.totalPrice + deliveryFee)}원',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: AppTheme.textGray,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                              ),
+                            Text(
+                              '${formatter.format(finalTotal)}원',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textBlack,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Semantics(
+                        label: '결제하기 버튼',
+                        hint: '총 ${formatter.format(finalTotal)}원입니다. 누르시면 결제 화면으로 이동합니다.',
+                        button: true,
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => context.push('/checkout'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primaryBlue,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            child: const Text(
+                              '결제하기',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ],
-                  ],
-                ),
-                SizedBox(height: 4),
-                Text(
-                  time,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                if (isSelected) ...[
-                  SizedBox(height: 4),
-                  Text(
-                    '가장 저렴한 금액, 가장 빠른 도착, 실시간 위치 확인',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          Text(
-            fee,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: fee.contains('무료')
-                  ? AppColors.freeDelivery
-                  : AppColors.textPrimary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOrderSummary() {
-    final subtotal = _cartItems.fold<int>(
-        0, (sum, item) => sum + (item.menuItem.price * item.quantity));
-    final deliveryFee = 3700;
-    final discount = 4700;
-    final finalTotal = subtotal + deliveryFee - discount;
-
-    return Container(
-      padding: EdgeInsets.all(16),
-      color: Colors.white,
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('메뉴 금액'),
-              Text(
-                  '${subtotal.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}원'),
-            ],
-          ),
-          SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('배달팁'),
-              Text(
-                  '${deliveryFee.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}원'),
-            ],
-          ),
-          SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('배민클럽 할인'),
-              Text(
-                  '-${discount.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}원',
-                  style: TextStyle(color: AppColors.freeDelivery)),
-            ],
-          ),
-          Divider(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '결제예정금액',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              Text(
-                '${finalTotal.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}원',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 8),
-          Container(
-            padding: EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.accentTeal.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.local_shipping,
-                    color: AppColors.accentTeal, size: 16),
-                SizedBox(width: 8),
-                Text(
-                  '무료배달! 배민클럽 포함 4,700원 할인',
-                  style: TextStyle(
-                    color: AppColors.accentTeal,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
-  Widget _buildBottomBar() {
-    final subtotal = _cartItems.fold<int>(
-        0, (sum, item) => sum + (item.menuItem.price * item.quantity));
-    final deliveryFee = 3700;
-    final discount = 4700;
-    final finalTotal = subtotal + deliveryFee - discount;
-
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
+  Widget _buildCartItem(item, formatter) {
+    return Semantics(
+      label: '${item.menuName} 장바구니 아이템',
+      hint: '수량 ${item.quantity}개, 총 ${formatter.format(item.totalPrice)}원입니다.',
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 이미지
+            Semantics(
+              label: '${item.menuName} 메뉴 이미지',
+              image: true,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppTheme.bgGray,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Image.network(
+                  item.menuImageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Semantics(
+                      label: '${item.menuName} 메뉴 이미지 로드 실패',
+                      image: true,
+                      child: const Icon(Icons.image, color: AppTheme.textGray),
+                    );
+                  },
+                ),
+              ),
+            ),
+          const SizedBox(width: 12),
+          // 정보
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      '${finalTotal.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}원',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                Semantics(
+                  label: '메뉴명',
+                  child: Text(
+                    item.menuName,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textBlack,
+                    ),
+                  ),
+                ),
+                if (item.selectedOptions.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Semantics(
+                    label: '선택된 옵션',
+                    child: Text(
+                      item.selectedOptions.map((opt) => opt.title).join(', '),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.textGray,
                       ),
                     ),
-                    SizedBox(width: 8),
-                    Text(
-                      '${(finalTotal + 4700).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}원',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: AppColors.textSecondary,
-                        decoration: TextDecoration.lineThrough,
+                  ),
+                ],
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Semantics(
+                      label: '총 가격 ${formatter.format(item.totalPrice)}원',
+                      child: Text(
+                        '${formatter.format(item.totalPrice)}원',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.textBlack,
+                        ),
                       ),
+                    ),
+                    Row(
+                      children: [
+                        Semantics(
+                          label: '수량 감소 버튼',
+                          hint: item.quantity > 1 ? '누르시면 수량이 1개 감소합니다.' : '수량이 1개이므로 더 이상 감소할 수 없습니다.',
+                          button: true,
+                          child: IconButton(
+                            icon: const Icon(Icons.remove_circle_outline, size: 20),
+                            onPressed: item.quantity > 1
+                                ? () {
+                                    ref.read(cartProvider.notifier).updateQuantity(
+                                          item.id,
+                                          item.quantity - 1,
+                                        );
+                                  }
+                                : null,
+                          ),
+                        ),
+                        Semantics(
+                          label: '현재 수량 ${item.quantity}개',
+                          child: Text(
+                            '${item.quantity}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ),
+                        Semantics(
+                          label: '수량 증가 버튼',
+                          hint: '누르시면 수량이 1개 증가합니다.',
+                          button: true,
+                          child: IconButton(
+                            icon: const Icon(Icons.add_circle_outline, size: 20),
+                            onPressed: () {
+                              ref.read(cartProvider.notifier).updateQuantity(
+                                    item.id,
+                                    item.quantity + 1,
+                                  );
+                            },
+                          ),
+                        ),
+                        Semantics(
+                          label: '삭제 버튼',
+                          hint: '누르시면 ${item.menuName}이 장바구니에서 삭제됩니다.',
+                          button: true,
+                          child: IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.red),
+                            onPressed: () {
+                              ref.read(cartProvider.notifier).removeItem(item.id);
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                ),
-                Text(
-                  '주문 가능',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
                 ),
               ],
             ),
           ),
-          SizedBox(width: 16),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => OrderScreen(
-                    cartItems: _cartItems,
-                    restaurant: _selectedRestaurant,
-                  ),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.baeminMint,
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Text(
-              '한집배달 주문하기',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
         ],
       ),
+      ),
     );
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 }
