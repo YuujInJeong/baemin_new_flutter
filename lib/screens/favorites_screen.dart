@@ -12,15 +12,53 @@ class FavoritesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final favoriteIds = ref.watch(favoriteStoresProvider);
     final filters = <String, dynamic>{};
-    final storesAsync = ref.watch(storesProvider(filters));
+    final allStores = ref.watch(storesProvider(filters));
+
+    // 즐겨찾기가 비어있으면 바로 빈 화면 표시
+    if (favoriteIds.isEmpty) {
+      return Scaffold(
+        backgroundColor: AppTheme.bgGray,
+        appBar: AppBar(
+          title: const Text('즐겨찾기'),
+        ),
+        body: Semantics(
+          label: '빈 상태',
+          hint: '즐겨찾는 맛집이 없습니다. 가게 상세 화면에서 하트 아이콘을 눌러 즐겨찾기에 추가할 수 있습니다.',
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Semantics(
+                  label: '빈 상태 아이콘',
+                  image: true,
+                  child: Icon(
+                    Icons.favorite_border,
+                    size: 64,
+                    color: AppTheme.textGray,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '즐겨찾는 맛집이 없습니다',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: AppTheme.textGray,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppTheme.bgGray,
       appBar: AppBar(
         title: const Text('즐겨찾기'),
       ),
-      body: storesAsync.when(
-        data: (allStores) {
+      body: Builder(
+        builder: (context) {
           final favoriteStores = allStores.where((s) => favoriteIds.contains(s.id)).toList();
 
           if (favoriteStores.isEmpty) {
@@ -69,8 +107,6 @@ class FavoritesScreen extends ConsumerWidget {
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Error: $error')),
       ),
     );
   }

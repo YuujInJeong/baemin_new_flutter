@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
-import '../repositories/mock_data.dart';
+import '../providers/order_provider.dart';
 
-class OrdersScreen extends StatelessWidget {
+class OrdersScreen extends ConsumerWidget {
   const OrdersScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final orders = MockData.getOrders();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ordersAsync = ref.watch(ordersProvider);
     final formatter = NumberFormat('#,###');
     final dateFormatter = DateFormat('yyyy.MM.dd');
 
@@ -17,22 +18,25 @@ class OrdersScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('주문내역'),
       ),
-      body: orders.isEmpty
-          ? Semantics(
+      body: ordersAsync.when(
+        data: (orders) {
+          if (orders.isEmpty) {
+            return Semantics(
               label: '빈 상태 메시지',
               hint: '아직 주문한 내역이 없습니다.',
               child: const Center(
                 child: Text(
                   '주문 내역이 없습니다',
                   style: TextStyle(color: AppTheme.textGray),
-      ),
+                ),
               ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: orders.length,
-              itemBuilder: (context, index) {
-                final order = orders[index];
+            );
+          }
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: orders.length,
+            itemBuilder: (context, index) {
+              final order = orders[index];
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   child: Padding(
@@ -121,7 +125,17 @@ class OrdersScreen extends StatelessWidget {
                     ),
                   ),
                 );
-              },
+            },
+          );
+        },
+        loading: () => Semantics(
+          label: '주문 내역 로딩 중',
+          child: const Center(child: CircularProgressIndicator()),
+        ),
+        error: (error, stack) => Semantics(
+          label: '주문 내역 로드 실패: $error',
+          child: Center(child: Text('Error: $error')),
+        ),
       ),
     );
   }

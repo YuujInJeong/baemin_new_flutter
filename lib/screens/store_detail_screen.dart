@@ -29,32 +29,40 @@ class _StoreDetailScreenState extends ConsumerState<StoreDetailScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.bgGray,
-      body: storeAsync.when(
-        data: (store) => CustomScrollView(
-          slivers: [
-            // 헤더 (이미지 Carousel)
-            _buildImageCarousel(store, isFavorite),
-            // 가게 정보
-            SliverToBoxAdapter(
-              child: _buildStoreInfo(store, isFavorite),
+      body: Stack(
+        children: [
+          storeAsync.when(
+            data: (store) => CustomScrollView(
+              slivers: [
+                // 헤더 (이미지 Carousel)
+                _buildImageCarousel(store, isFavorite),
+                // 가게 정보
+                SliverToBoxAdapter(
+                  child: _buildStoreInfo(store, isFavorite),
+                ),
+                // 리뷰 스니펫
+                SliverToBoxAdapter(
+                  child: _buildReviewSnippet(),
+                ),
+                // 메뉴 탭
+                SliverToBoxAdapter(
+                  child: _buildMenuTabs(store),
+                ),
+                // 메뉴 리스트
+                _buildMenuList(store),
+              ],
             ),
-            // 리뷰 스니펫
-            SliverToBoxAdapter(
-              child: _buildReviewSnippet(),
-            ),
-            // 메뉴 탭
-            SliverToBoxAdapter(
-              child: _buildMenuTabs(store),
-            ),
-            // 메뉴 리스트
-            _buildMenuList(store),
-          ],
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Error: $error')),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stack) => Center(child: Text('Error: $error')),
+          ),
+          // 장바구니 버튼
+          Positioned(
+            bottom: 80,
+            right: 16,
+            child: const CartFAB(),
+          ),
+        ],
       ),
-      floatingActionButton: const CartFAB(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -86,8 +94,8 @@ class _StoreDetailScreenState extends ConsumerState<StoreDetailScreen> {
               return Builder(
                 builder: (BuildContext context) {
                   return Semantics(
-                    label: '가게 이미지 ${index + 1}',
-                    hint: '${images.length}개 중 ${index + 1}번째 이미지입니다.',
+                    label: '${store.name} 가게 이미지 ${index + 1}',
+                    hint: '${store.name}의 음식 사진입니다. ${images.length}개 중 ${index + 1}번째 이미지입니다.',
                     image: true,
                     child: Container(
                       width: MediaQuery.of(context).size.width,
@@ -99,7 +107,8 @@ class _StoreDetailScreenState extends ConsumerState<StoreDetailScreen> {
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Semantics(
-                            label: '가게 이미지 로드 실패',
+                            label: '${store.name} 가게 이미지 로드 실패',
+                            hint: '이미지를 불러올 수 없습니다.',
                             image: true,
                             child: Container(
                               color: AppTheme.bgGray,
@@ -511,29 +520,31 @@ class _StoreDetailScreenState extends ConsumerState<StoreDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 이미지
-          Semantics(
-            label: '${menuItem.name} 메뉴 이미지',
-            image: true,
-            child: Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: AppTheme.bgGray,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Image.network(
-                menuItem.imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Semantics(
-                    label: '${menuItem.name} 메뉴 이미지 로드 실패',
-                    image: true,
-                    child: const Icon(Icons.image, color: AppTheme.textGray),
-                  );
-                },
+            Semantics(
+              label: '${menuItem.name} 메뉴 이미지',
+              hint: '${menuItem.name}의 음식 사진입니다.',
+              image: true,
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: AppTheme.bgGray,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Image.network(
+                  menuItem.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Semantics(
+                      label: '${menuItem.name} 메뉴 이미지 로드 실패',
+                      hint: '이미지를 불러올 수 없습니다.',
+                      image: true,
+                      child: const Icon(Icons.image, color: AppTheme.textGray),
+                    );
+                  },
+                ),
               ),
             ),
-          ),
           const SizedBox(width: 12),
           // 정보
           Expanded(

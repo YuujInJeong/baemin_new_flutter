@@ -53,11 +53,15 @@ class CartNotifier extends StateNotifier<CartState> {
   }
 
   Future<void> addItem({
+    required String storeId,
+    required String storeName,
     required MenuItem menuItem,
     required int quantity,
     required List<MenuOption> selectedOptions,
   }) async {
     await _repository.addItem(
+      storeId: storeId,
+      storeName: storeName,
       menuItem: menuItem,
       quantity: quantity,
       selectedOptions: selectedOptions,

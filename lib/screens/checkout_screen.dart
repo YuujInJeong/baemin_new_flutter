@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../providers/cart_provider.dart';
 import '../providers/address_provider.dart';
+import '../providers/order_provider.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -297,13 +298,40 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           child: SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                // 더미 결제 처리
-                ref.read(cartProvider.notifier).clear();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('결제가 완료되었습니다')),
+              onPressed: () async {
+                // 주문 생성
+                final cartState = ref.read(cartProvider);
+                if (cartState.items.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('장바구니가 비어있습니다')),
+                  );
+                  return;
+                }
+
+                final storeId = cartState.items.first.storeId;
+                final storeName = cartState.items.first.storeName;
+                final orderRepository = ref.read(orderRepositoryProvider);
+                
+                await orderRepository.createOrder(
+                  storeId: storeId,
+                  storeName: storeName,
+                  items: cartState.items,
+                  totalPrice: finalTotal,
                 );
-                context.go('/');
+                
+                // 주문 목록 새로고침
+                ref.invalidate(ordersProvider);
+
+                // 장바구니 비우기
+                ref.read(cartProvider.notifier).clear();
+                
+                // 주문 내역 화면으로 이동
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('결제가 완료되었습니다')),
+                  );
+                  context.go('/orders');
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryBlue,

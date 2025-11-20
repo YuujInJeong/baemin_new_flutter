@@ -345,11 +345,12 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             // 이미지
             Semantics(
               label: '${item.menuName} 메뉴 이미지',
+              hint: '${item.menuName}의 음식 사진입니다.',
               image: true,
               child: Container(
                 width: 80,
                 height: 80,
-      decoration: BoxDecoration(
+                decoration: BoxDecoration(
                   color: AppTheme.bgGray,
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -359,13 +360,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   errorBuilder: (context, error, stackTrace) {
                     return Semantics(
                       label: '${item.menuName} 메뉴 이미지 로드 실패',
+                      hint: '이미지를 불러올 수 없습니다.',
                       image: true,
                       child: const Icon(Icons.image, color: AppTheme.textGray),
                     );
                   },
                 ),
               ),
-      ),
+            ),
           const SizedBox(width: 12),
           // 정보
           Expanded(

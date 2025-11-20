@@ -78,6 +78,7 @@ class _MenuOptionScreenState extends ConsumerState<MenuOptionScreen> {
                 // 이미지
                 Semantics(
                   label: '${selectedMenuItem.name} 메뉴 이미지',
+                  hint: '${selectedMenuItem.name}의 음식 사진입니다.',
                   image: true,
                   child: Container(
                     width: double.infinity,
@@ -89,6 +90,7 @@ class _MenuOptionScreenState extends ConsumerState<MenuOptionScreen> {
                       errorBuilder: (context, error, stackTrace) {
                         return Semantics(
                           label: '${selectedMenuItem.name} 메뉴 이미지 로드 실패',
+                          hint: '이미지를 불러올 수 없습니다.',
                           image: true,
                           child: const Icon(Icons.image, size: 64, color: AppTheme.textGray),
                         );
@@ -307,6 +309,8 @@ class _MenuOptionScreenState extends ConsumerState<MenuOptionScreen> {
                               .toList() ??
                           [];
                       await ref.read(cartProvider.notifier).addItem(
+                            storeId: widget.storeId,
+                            storeName: store.name,
                             menuItem: selectedMenuItem,
                             quantity: _quantity,
                             selectedOptions: selectedOptionsList,

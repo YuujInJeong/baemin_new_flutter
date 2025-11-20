@@ -12,12 +12,15 @@ class CartRepository {
   int get totalPrice => _items.fold(0, (sum, item) => sum + item.totalPrice);
 
   Future<void> addItem({
+    required String storeId,
+    required String storeName,
     required MenuItem menuItem,
     required int quantity,
     required List<MenuOption> selectedOptions,
   }) async {
     final existingIndex = _items.indexWhere(
       (item) =>
+          item.storeId == storeId &&
           item.menuId == menuItem.id &&
           _areOptionsEqual(item.selectedOptions, selectedOptions),
     );
@@ -31,6 +34,8 @@ class CartRepository {
       _items.add(
         CartItem(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
+          storeId: storeId,
+          storeName: storeName,
           menuId: menuItem.id,
           menuName: menuItem.name,
           menuImageUrl: menuItem.imageUrl,

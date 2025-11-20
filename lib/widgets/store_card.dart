@@ -53,6 +53,7 @@ class StoreCard extends StatelessWidget {
                 children: [
                   Semantics(
                     label: '${store.name} 가게 대표 이미지',
+                    hint: '${store.name}의 음식 사진입니다.',
                     image: true,
                     child: ClipRRect(
                       borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
@@ -61,15 +62,47 @@ class StoreCard extends StatelessWidget {
                         width: double.infinity,
                         height: 160, // top image height 160dp
                         fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            width: double.infinity,
+                            height: 160,
+                            color: AppTheme.bgGray,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                    : null,
+                              ),
+                            ),
+                          );
+                        },
                         errorBuilder: (context, error, stackTrace) {
                           return Semantics(
-                            label: '${store.name} 가게 이미지 로드 실패',
+                            label: '${store.name} 가게 이미지',
                             image: true,
                             child: Container(
                               width: double.infinity,
                               height: 160,
                               color: AppTheme.bgGray,
-                              child: const Icon(Icons.image, size: 48, color: AppTheme.textGray),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.restaurant, size: 48, color: AppTheme.textGray),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    store.name,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: AppTheme.textGray,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
                             ),
                           );
                         },

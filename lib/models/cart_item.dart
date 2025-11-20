@@ -2,6 +2,8 @@ import 'menu_option.dart';
 
 class CartItem {
   final String id;
+  final String storeId;
+  final String storeName;
   final String menuId;
   final String menuName;
   final String menuImageUrl;
@@ -11,6 +13,8 @@ class CartItem {
 
   CartItem({
     required this.id,
+    required this.storeId,
+    required this.storeName,
     required this.menuId,
     required this.menuName,
     required this.menuImageUrl,
@@ -30,6 +34,8 @@ class CartItem {
   factory CartItem.fromJson(Map<String, dynamic> json) {
     return CartItem(
       id: json['id'] as String,
+      storeId: json['storeId'] as String,
+      storeName: json['storeName'] as String,
       menuId: json['menuId'] as String,
       menuName: json['menuName'] as String,
       menuImageUrl: json['menuImageUrl'] as String,
@@ -45,6 +51,8 @@ class CartItem {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'storeId': storeId,
+      'storeName': storeName,
       'menuId': menuId,
       'menuName': menuName,
       'menuImageUrl': menuImageUrl,
@@ -56,6 +64,8 @@ class CartItem {
 
   CartItem copyWith({
     String? id,
+    String? storeId,
+    String? storeName,
     String? menuId,
     String? menuName,
     String? menuImageUrl,
@@ -65,6 +75,8 @@ class CartItem {
   }) {
     return CartItem(
       id: id ?? this.id,
+      storeId: storeId ?? this.storeId,
+      storeName: storeName ?? this.storeName,
       menuId: menuId ?? this.menuId,
       menuName: menuName ?? this.menuName,
       menuImageUrl: menuImageUrl ?? this.menuImageUrl,

@@ -30,52 +30,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       'sortBy': _sortBy,
     };
 
-    final storesAsync = ref.watch(storesProvider(filters));
+    final stores = ref.watch(storesProvider(filters));
+    
+    // 디버그: stores 개수 확인
+    // print('Stores count: ${stores.length}');
 
     return Scaffold(
       backgroundColor: AppTheme.bgGray,
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            // 상단 헤더 - 높이 56dp, 좌우 16dp padding
-            _buildTopBar(context),
-            // 본문
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 검색바
-                    _buildSearchBar(context),
-                    const SizedBox(height: 16),
-                    // 카테고리 그리드 (2줄)
-                    _buildCategoryGrid(),
-                    const SizedBox(height: 16),
-                    // WOW 배너
-                    _buildWowBanner(),
-                    const SizedBox(height: 16),
-                    // 무료배달 섹션
-                    storesAsync.when(
-                      data: (stores) => _buildFreeDeliverySection(stores),
-                      loading: () => _buildFreeDeliverySection([]), // 로딩 중에도 빈 섹션 표시
-                      error: (error, stack) => _buildFreeDeliverySection([]), // 에러 시에도 빈 섹션 표시
+            Column(
+              children: [
+                // 상단 헤더 - 높이 56dp, 좌우 16dp padding
+                _buildTopBar(context),
+                // 본문
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 검색바
+                        _buildSearchBar(context),
+                        const SizedBox(height: 16),
+                        // 카테고리 그리드 (2줄)
+                        _buildCategoryGrid(),
+                        const SizedBox(height: 16),
+                        // WOW 배너
+                        _buildWowBanner(),
+                        const SizedBox(height: 16),
+                        // 무료배달 섹션
+                        _buildFreeDeliverySection(stores),
+                        const SizedBox(height: 24),
+                        // 기타 섹션들
+                        _buildSections(stores),
+                      ],
                     ),
-                    const SizedBox(height: 24),
-                    // 기타 섹션들
-                    storesAsync.when(
-                      data: (stores) => _buildSections(stores),
-                      loading: () => _buildSections([]), // 로딩 중에도 빈 섹션 표시
-                      error: (error, stack) => _buildSections([]), // 에러 시에도 빈 섹션 표시
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
+            ),
+            // 장바구니 버튼
+            Positioned(
+              bottom: 80,
+              right: 16,
+              child: const CartFAB(),
             ),
           ],
         ),
       ),
-      floatingActionButton: const CartFAB(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -437,6 +440,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildSections(List stores) {
+    // stores가 비어있으면 빈 위젯 반환
+    if (stores.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

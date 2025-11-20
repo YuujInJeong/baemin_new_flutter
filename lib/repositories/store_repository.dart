@@ -7,8 +7,8 @@ class StoreRepository {
     bool? isDiscount,
     String? sortBy,
   }) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 500));
+    // 즉시 데이터 반환 (로딩 딜레이 제거)
+    // await Future.delayed(const Duration(milliseconds: 100));
 
     var stores = MockData.getStores();
 
@@ -33,12 +33,14 @@ class StoreRepository {
   }
 
   Future<Store> getStoreById(String id) async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    // 즉시 데이터 반환
+    // await Future.delayed(const Duration(milliseconds: 100));
     return MockData.getStoreDetail(id);
   }
 
   Future<List<Store>> searchStores(String query) async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    // 즉시 데이터 반환
+    // await Future.delayed(const Duration(milliseconds: 100));
     final stores = MockData.getStores();
     return stores
         .where((s) => s.name.toLowerCase().contains(query.toLowerCase()))
