@@ -10,6 +10,8 @@ import '../screens/menu_option_screen.dart';
 import '../screens/cart_screen.dart';
 import '../screens/checkout_screen.dart';
 import '../screens/address_screen.dart';
+import '../screens/address_setting_screen.dart';
+import '../models/address.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -89,6 +91,18 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/address',
       builder: (context, state) => const AddressScreen(),
+    ),
+    GoRoute(
+      path: '/address/setting',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final address = extra?['address'] as Address?;
+        final type = extra?['type'] as AddressType?;
+        return AddressSettingScreen(
+          address: address,
+          initialType: type,
+        );
+      },
     ),
   ],
 );

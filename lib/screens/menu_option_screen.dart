@@ -40,7 +40,7 @@ class _MenuOptionScreenState extends ConsumerState<MenuOptionScreen> {
           if (item.id == widget.menuId) {
             menuItem = item;
             break;
-          }
+      }
         }
 
         if (menuItem == null) {
@@ -66,11 +66,11 @@ class _MenuOptionScreenState extends ConsumerState<MenuOptionScreen> {
         );
         final totalPrice = (basePrice + optionsPrice) * _quantity;
 
-        return Scaffold(
+    return Scaffold(
           backgroundColor: Colors.white,
-          appBar: AppBar(
+      appBar: AppBar(
             title: const Text('메뉴 옵션'),
-          ),
+      ),
           body: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,7 +119,7 @@ class _MenuOptionScreenState extends ConsumerState<MenuOptionScreen> {
                         child: Text(
                           '${formatter.format(basePrice)}원',
                           style: const TextStyle(
-                            fontSize: 18,
+                        fontSize: 18,
                             fontWeight: FontWeight.w600,
                             color: AppTheme.textBlack,
                           ),
@@ -135,12 +135,12 @@ class _MenuOptionScreenState extends ConsumerState<MenuOptionScreen> {
                           ),
                         ),
                       ],
-                    ],
-                  ),
-                ),
+              ],
+            ),
+          ),
                 const Divider(),
                 // 수량 조절
-                Padding(
+          Padding(
                   padding: const EdgeInsets.all(16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -197,25 +197,25 @@ class _MenuOptionScreenState extends ConsumerState<MenuOptionScreen> {
                             ),
                           ),
                         ],
-                      ),
-                    ],
-                  ),
+          ),
+        ],
+      ),
                 ),
                 // 사이드 메뉴 옵션
                 if (selectedMenuItem.options != null && selectedMenuItem.options!.isNotEmpty) ...[
                   const Divider(),
                   Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
                         Semantics(
                           label: '섹션 제목',
                           child: const Text(
                             '사이드 메뉴',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
                               color: AppTheme.textBlack,
                             ),
                           ),
@@ -260,7 +260,7 @@ class _MenuOptionScreenState extends ConsumerState<MenuOptionScreen> {
           ),
           bottomNavigationBar: Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
+                decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
@@ -269,7 +269,7 @@ class _MenuOptionScreenState extends ConsumerState<MenuOptionScreen> {
                   offset: const Offset(0, -2),
                 ),
               ],
-            ),
+                ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -317,10 +317,10 @@ class _MenuOptionScreenState extends ConsumerState<MenuOptionScreen> {
                         );
                         context.pop();
                       }
-                    },
-                    style: ElevatedButton.styleFrom(
+          },
+          style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryBlue,
-                      foregroundColor: Colors.white,
+              foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                     ),
                     child: const Text(
@@ -328,7 +328,7 @@ class _MenuOptionScreenState extends ConsumerState<MenuOptionScreen> {
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                   ),
-                ),
+        ),
               ],
             ),
           ),

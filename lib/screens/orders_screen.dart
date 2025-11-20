@@ -25,7 +25,7 @@ class OrdersScreen extends StatelessWidget {
                 child: Text(
                   '주문 내역이 없습니다',
                   style: TextStyle(color: AppTheme.textGray),
-                ),
+      ),
               ),
             )
           : ListView.builder(
@@ -69,7 +69,7 @@ class OrdersScreen extends StatelessWidget {
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: AppTheme.textBlack,
-                                  ),
+          ),
                                 ),
                               ),
                             ),
@@ -85,7 +85,7 @@ class OrdersScreen extends StatelessWidget {
               fontWeight: FontWeight.w600,
                                 color: AppTheme.textBlack,
             ),
-                            ),
+          ),
                           ),
                         const SizedBox(height: 8),
                         Row(
@@ -100,8 +100,8 @@ class OrdersScreen extends StatelessWidget {
                                   fontWeight: FontWeight.w600,
                                   color: AppTheme.textBlack,
             ),
-                              ),
-                            ),
+            ),
+          ),
                             Semantics(
                               label: '재주문 버튼',
                               hint: '${order.storeName}에서 ${formatter.format(order.totalPrice)}원 주문을 다시 주문할 수 있습니다.',

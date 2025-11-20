@@ -33,16 +33,16 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       ),
       body: cartState.items.isEmpty
           ? const Center(
-              child: Text(
+            child: Text(
                 '장바구니가 비어있습니다',
                 style: TextStyle(color: AppTheme.textGray),
-              ),
+            ),
             )
           : Column(
-              children: [
+        children: [
                 Expanded(
                   child: SingleChildScrollView(
-                    child: Column(
+        child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // 주소
@@ -51,36 +51,36 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           color: Colors.white,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
+          children: [
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
                                     Semantics(
                                       label: '섹션 제목',
                                       child: const Text(
                                         '배송 주소',
-                                        style: TextStyle(
+            style: TextStyle(
                                           fontSize: 12,
                                           color: AppTheme.textGray,
-                                        ),
-                                      ),
+            ),
+          ),
                                     ),
                                     const SizedBox(height: 4),
                                     Semantics(
                                       label: '현재 배송 주소',
                                       hint: address?.fullAddress ?? '주소를 선택하세요',
-                                      child: Text(
+              child: Text(
                                         address?.fullAddress ?? '주소를 선택하세요',
                                         style: const TextStyle(
                                           fontSize: 16,
-                                          fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w600,
                                           color: AppTheme.textBlack,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+              ),
+            ),
+          ),
+        ],
+      ),
                               ),
                               Semantics(
                                 label: '주소 수정 버튼',
@@ -89,29 +89,29 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 child: TextButton(
                                   onPressed: () => context.push('/address'),
                                   child: const Text('수정'),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+              ),
+            ),
+          ],
+        ),
+      ),
                         const SizedBox(height: 8),
                         // 배송 옵션
                         Container(
                           padding: const EdgeInsets.all(16),
                           color: Colors.white,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
                               Semantics(
                                 label: '섹션 제목',
                                 child: const Text(
                                   '배송 옵션',
-                                  style: TextStyle(
+            style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     color: AppTheme.textBlack,
-                                  ),
-                                ),
+            ),
+          ),
                               ),
                               const SizedBox(height: 12),
                               Semantics(
@@ -128,7 +128,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                   title: const Text('WOW 무료배달'),
                                   subtitle: const Text('무료'),
                                   activeColor: AppTheme.primaryBlue,
-                                ),
+      ),
                               ),
                               Semantics(
                                 label: '한집 배달 옵션',
@@ -154,19 +154,19 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           color: Colors.white,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                               Semantics(
                                 label: '섹션 제목',
                                 child: const Text(
                                   '주문 내역',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                                     color: AppTheme.textBlack,
-                                  ),
-                                ),
+                      ),
+                    ),
                               ),
                               const SizedBox(height: 12),
                               ...cartState.items.map((item) {
@@ -181,9 +181,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   ),
                 ),
                 // 하단 결제 바
-                Container(
+                      Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
+                        decoration: BoxDecoration(
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
@@ -192,7 +192,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                         offset: const Offset(0, -2),
                       ),
                     ],
-                  ),
+                        ),
                   child: Column(
                     children: [
                       Semantics(
@@ -202,19 +202,19 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           children: [
                             const Text(
                               '주문 금액',
-                              style: TextStyle(
-                                fontSize: 14,
+                  style: TextStyle(
+                    fontSize: 14,
                                 color: AppTheme.textGray,
-                              ),
-                            ),
-                            Text(
+                  ),
+                ),
+                  Text(
                               '${formatter.format(cartState.totalPrice)}원',
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: AppTheme.textBlack,
-                              ),
-                            ),
-                          ],
+                    ),
+                  ),
+                ],
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -228,19 +228,19 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               style: TextStyle(
                                 fontSize: 14,
                                 color: AppTheme.textGray,
-                              ),
-                            ),
-                            Text(
+            ),
+          ),
+          Text(
                               deliveryFee > 0
                                   ? '+${formatter.format(deliveryFee)}원'
                                   : '무료',
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: AppTheme.textBlack,
-                              ),
-                            ),
-                          ],
-                        ),
+            ),
+          ),
+        ],
+      ),
                       ),
                       if (discount > 0) ...[
                         const SizedBox(height: 8),
@@ -248,8 +248,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           label: '즉시할인 ${formatter.format(discount)}원',
                           hint: '할인 혜택이 적용되었습니다.',
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
                               const Text(
                                 '즉시할인',
                                 style: TextStyle(
@@ -257,15 +257,15 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                   color: AppTheme.primaryBlue,
                                 ),
                               ),
-                              Text(
+              Text(
                                 '-${formatter.format(discount)}원',
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: AppTheme.primaryBlue,
                                 ),
                               ),
-                            ],
-                          ),
+            ],
+          ),
                         ),
                       ],
                       const Divider(),
@@ -275,8 +275,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             ? '원래 가격 ${formatter.format(cartState.totalPrice + deliveryFee)}원에서 할인이 적용되었습니다.'
                             : '',
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
                             if (cartState.totalPrice != finalTotal)
                               Semantics(
                                 label: '원래 가격',
@@ -288,18 +288,18 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                     color: AppTheme.textGray,
                                     decoration: TextDecoration.lineThrough,
                                   ),
-                                ),
-                              ),
-                            Text(
+                ),
+              ),
+              Text(
                               '${formatter.format(finalTotal)}원',
                               style: const TextStyle(
                                 fontSize: 20,
-                                fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.bold,
                                 color: AppTheme.textBlack,
-                              ),
-                            ),
-                          ],
-                        ),
+                ),
+              ),
+            ],
+          ),
                       ),
                       const SizedBox(height: 16),
                       Semantics(
@@ -317,19 +317,19 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                             ),
                             child: const Text(
                               '결제하기',
-                              style: TextStyle(
+                  style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
+                    fontWeight: FontWeight.w600,
+                  ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
                 ),
               ],
             ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -349,7 +349,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               child: Container(
                 width: 80,
                 height: 80,
-                decoration: BoxDecoration(
+      decoration: BoxDecoration(
                   color: AppTheme.bgGray,
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -365,7 +365,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   },
                 ),
               ),
-            ),
+      ),
           const SizedBox(width: 12),
           // 정보
           Expanded(
@@ -408,8 +408,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: AppTheme.textBlack,
-                        ),
                       ),
+                    ),
                     ),
                     Row(
                       children: [
@@ -470,7 +470,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           ),
         ],
       ),
-      ),
-    );
+                ),
+              );
   }
 }

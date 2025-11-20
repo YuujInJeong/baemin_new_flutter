@@ -219,15 +219,27 @@ class MockData {
     return [
       Address(
         id: 'addr1',
-        address: '서울시 강남구 역삼동',
-        detailAddress: '123-45',
+        address: '경기도 안산시 상록구 반석로 8',
+        detailAddress: '한양아파트 3동 307호',
         isDefault: true,
+        type: AddressType.home,
+        directions: null,
       ),
       Address(
         id: 'addr2',
-        address: '서울시 서초구 서초동',
-        detailAddress: '678-90',
+        address: '강원특별자치도 강릉시 해안로 536',
+        detailAddress: '3동 336호',
         isDefault: false,
+        type: AddressType.other,
+        directions: null,
+      ),
+      Address(
+        id: 'addr3',
+        address: '경기도 용인시 기흥구 덕영대로 1732',
+        detailAddress: '경희대학교국제캠퍼스 학관 정문',
+        isDefault: false,
+        type: AddressType.other,
+        directions: null,
       ),
     ];
   }

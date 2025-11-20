@@ -57,29 +57,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     // 무료배달 섹션
                     storesAsync.when(
                       data: (stores) => _buildFreeDeliverySection(stores),
-                      loading: () => Semantics(
-                        label: '무료배달 가게 목록 로딩 중',
-                        child: const SizedBox.shrink(),
-                      ),
-                      error: (error, stack) => Semantics(
-                        label: '무료배달 가게 목록 로드 실패',
-                        child: const SizedBox.shrink(),
-                      ),
+                      loading: () => _buildFreeDeliverySection([]), // 로딩 중에도 빈 섹션 표시
+                      error: (error, stack) => _buildFreeDeliverySection([]), // 에러 시에도 빈 섹션 표시
                     ),
                     const SizedBox(height: 24),
                     // 기타 섹션들
                     storesAsync.when(
                       data: (stores) => _buildSections(stores),
-                      loading: () => Semantics(
-                        label: '가게 목록 로딩 중',
-                        child: const Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      ),
-                      error: (error, stack) => Semantics(
-                        label: '가게 목록 로드 실패: $error',
-                        child: Center(child: Text('Error: $error')),
-                      ),
+                      loading: () => _buildSections([]), // 로딩 중에도 빈 섹션 표시
+                      error: (error, stack) => _buildSections([]), // 에러 시에도 빈 섹션 표시
                     ),
                   ],
                 ),
@@ -146,8 +132,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           // 알림 아이콘
           Semantics(
-            label: '알림 버튼',
-            hint: '누르시면 알림 목록 화면으로 이동합니다.',
+            label: '알림',
+            hint: '알림 버튼입니다. 누르시면 새로운 알림 목록을 확인할 수 있습니다.',
             button: true,
             child: IconButton(
               icon: const Icon(Icons.notifications_outlined, color: AppTheme.textBlack),
@@ -424,21 +410,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(height: 12),
           Semantics(
             label: '무료배달 가게 목록',
-            hint: '${freeDeliveryStores.length}개의 무료배달 가게가 있습니다.',
+            hint: freeDeliveryStores.isEmpty 
+                ? '무료배달 가게 목록을 불러오는 중입니다.' 
+                : '${freeDeliveryStores.length}개의 무료배달 가게가 있습니다.',
             child: SizedBox(
               height: 300,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: freeDeliveryStores.length,
-                itemBuilder: (context, index) {
-                  final store = freeDeliveryStores[index];
-                  return StoreCard(
-                    store: store,
-                    onTap: () => context.push('/store/${store.id}'),
-                  );
-                },
-              ),
+              child: freeDeliveryStores.isEmpty
+                  ? const SizedBox.shrink()
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: freeDeliveryStores.length,
+                      itemBuilder: (context, index) {
+                        final store = freeDeliveryStores[index];
+                        return StoreCard(
+                          store: store,
+                          onTap: () => context.push('/store/${store.id}'),
+                        );
+                      },
+                    ),
             ),
           ),
         ],
@@ -506,21 +496,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           SectionHeader(title: title),
           Semantics(
             label: '$title 가게 목록',
-            hint: '${stores.length}개의 가게가 있습니다.',
+            hint: stores.isEmpty 
+                ? '$title 가게 목록을 불러오는 중입니다.' 
+                : '${stores.length}개의 가게가 있습니다.',
             child: SizedBox(
               height: 300,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: stores.length,
-                itemBuilder: (context, index) {
-                  final store = stores[index];
-                  return StoreCard(
-                    store: store,
-                    onTap: () => context.push('/store/${store.id}'),
-                  );
-                },
-              ),
+              child: stores.isEmpty
+                  ? const SizedBox.shrink()
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: stores.length,
+                      itemBuilder: (context, index) {
+                        final store = stores[index];
+                        return StoreCard(
+                          store: store,
+                          onTap: () => context.push('/store/${store.id}'),
+                        );
+                      },
+                    ),
             ),
           ),
         ],

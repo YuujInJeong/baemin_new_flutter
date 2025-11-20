@@ -19,5 +19,15 @@ class AddressNotifier extends StateNotifier<Address?> {
   void setAddress(Address address) {
     state = address;
   }
+
+  void addAddress(Address address) {
+    // 실제로는 리포지토리에 추가해야 하지만, 여기서는 상태만 업데이트
+    setAddress(address);
+  }
+
+  void updateAddress(Address address) {
+    // 실제로는 리포지토리에 업데이트해야 하지만, 여기서는 상태만 업데이트
+    setAddress(address);
+  }
 }
 
